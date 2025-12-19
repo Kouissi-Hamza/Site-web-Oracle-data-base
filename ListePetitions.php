@@ -1,13 +1,14 @@
 <?php
 include 'connexion.php';
 
-if(!isLoggedIn()) {
+if (!isLoggedIn()) {
     header("Location: index.php");
     exit();
 }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Liste des pétitions</title>
@@ -29,7 +30,7 @@ if(!isLoggedIn()) {
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -97,7 +98,7 @@ if(!isLoggedIn()) {
             padding: 1.5rem;
             border-radius: 15px;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
 
@@ -130,7 +131,7 @@ if(!isLoggedIn()) {
             color: white;
             font-size: 2.5rem;
             margin-bottom: 2rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .petitions-grid {
@@ -143,14 +144,14 @@ if(!isLoggedIn()) {
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 1.5rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .petition-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
 
         .petition-title {
@@ -249,35 +250,36 @@ if(!isLoggedIn()) {
 </head>
 
 <body>
-<div class="header">
-    <div class="header-content">
-        <a href="index.php" class="logo">Gestion des Pétitions</a>
-        <div class="nav-links">
-            <a href="index.php">Accueil</a>
-            <a href="ListePetitions.php" class="active">Pétitions</a>
-            <a href="ajouterPetition.php">Créer</a>
-            <a href="mesPetitions.php">Mes Pétitions</a>
-            <span class="user-info"><?php echo htmlspecialchars($_SESSION['user_prenom']); ?></span>
-            <a href="logout.php">Déconnexion</a>
+    <div class="header">
+        <div class="header-content">
+            <a href="index.php" class="logo">Gestion des Pétitions</a>
+            <div class="nav-links">
+                <a href="index.php">Accueil</a>
+                <a href="ListePetitions.php" class="active">Pétitions</a>
+                <a href="ajouterPetition.php">Créer</a>
+                <a href="mesPetitions.php">Mes Pétitions</a>
+                <span class="user-info"><?php echo htmlspecialchars($_SESSION['user_prenom']); ?></span>
+                <a href="logout.php">Déconnexion</a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="container">
-    <div class="top-stats">
-        <strong>Pétition la plus signée :</strong>
-        <span id="topPetition">Chargement...</span>
-        <a href="ajouterPetition.php" class="add-btn">+ Nouvelle pétition</a>
+    <div class="container">
+        <div class="top-stats">
+            <strong>Pétition la plus signée :</strong>
+            <span id="topPetition">Chargement...</span>
+            <a href="ajouterPetition.php" class="add-btn">+ Nouvelle pétition</a>
+        </div>
+
+        <h1>Liste des Pétitions</h1>
+
+        <div id="petitionContainer" class="petitions-grid">
+            <!-- Petitions via AJAX -->
+        </div>
     </div>
-
-    <h1>Liste des Pétitions</h1>
-
-    <div id="petitionContainer" class="petitions-grid">
-        <!-- Petitions via AJAX -->
-    </div>
-</div>
 
 </body>
+
 </html>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -285,7 +287,7 @@ if(!isLoggedIn()) {
         function loadPetitions() {
             const xhr = new XMLHttpRequest();
             xhr.open("GET", "fetch_petitions.php", true);
-            xhr.onload = function () {
+            xhr.onload = function() {
                 if (xhr.status === 200) {
                     document.getElementById("petitionContainer").innerHTML = xhr.responseText;
                 }
@@ -305,13 +307,14 @@ if(!isLoggedIn()) {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     try {
                         const data = JSON.parse(xhr.responseText);
-                        if (data.TitreP !== undefined) {
+                        if (data.TITREP !== undefined) {
                             document.getElementById('topPetition').textContent =
-                                data.TitreP + ' : ' + data.nbr + ' signatures';
+                                data.TITREP + ' : ' + data.NBR + ' signatures';
                         } else {
                             document.getElementById('topPetition').textContent = 'Aucune pétition';
                         }
-                    } catch(e) {
+
+                    } catch (e) {
                         console.error("Erreur JSON", e);
                     }
                 }
@@ -352,7 +355,7 @@ if(!isLoggedIn()) {
                             lastId = data.lastId;
                             initialised = true;
                         }
-                    } catch(e) {
+                    } catch (e) {
                         console.error("Erreur JSON", e);
                     }
                 }

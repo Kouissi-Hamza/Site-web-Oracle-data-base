@@ -1,21 +1,19 @@
 <?php
 include 'connexion.php';
 
+// DB queries are performed in fetch_Mespetitions.php via AJAX
+
 // Check if user is logged in
-if(!isLoggedIn()) {
+if (!isLoggedIn()) {
     header("Location: index.php");
     exit();
 }
 
 $userEmail = $_SESSION['user_email'];
-
-// Get user's petitions
-$stmt = $conn->prepare("SELECT * FROM petition WHERE Email = ? ORDER BY DateAjoutP DESC");
-$stmt->execute([$userEmail]);
-$petitions = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Mes Pétitions</title>
@@ -37,7 +35,7 @@ $petitions = $stmt->fetchAll();
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -104,7 +102,7 @@ $petitions = $stmt->fetchAll();
             color: white;
             font-size: 2.5rem;
             margin-bottom: 2rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .petitions-grid {
@@ -117,14 +115,14 @@ $petitions = $stmt->fetchAll();
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 1.5rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .petition-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
 
         .petition-title {
@@ -192,7 +190,7 @@ $petitions = $stmt->fetchAll();
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
         .empty-state {
@@ -201,7 +199,7 @@ $petitions = $stmt->fetchAll();
             border-radius: 20px;
             padding: 3rem 2rem;
             text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
         .empty-state p {
@@ -258,48 +256,50 @@ $petitions = $stmt->fetchAll();
         }
     </style>
 </head>
+
 <body>
-<div class="header">
-    <div class="header-content">
-        <a href="index.php" class="logo">Gestion des Pétitions</a>
-        <div class="nav-links">
-            <a href="index.php">Accueil</a>
-            <a href="ListePetitions.php">Pétitions</a>
-            <a href="ajouterPetition.php">Créer</a>
-            <a href="mesPetitions.php" class="active">Mes Pétitions</a>
-            <span class="user-info"><?php echo htmlspecialchars($_SESSION['user_prenom']); ?></span>
-            <a href="logout.php">Déconnexion</a>
+    <div class="header">
+        <div class="header-content">
+            <a href="index.php" class="logo">Gestion des Pétitions</a>
+            <div class="nav-links">
+                <a href="index.php">Accueil</a>
+                <a href="ListePetitions.php">Pétitions</a>
+                <a href="ajouterPetition.php">Créer</a>
+                <a href="mesPetitions.php" class="active">Mes Pétitions</a>
+                <span class="user-info"><?php echo htmlspecialchars($_SESSION['user_prenom']); ?></span>
+                <a href="logout.php">Déconnexion</a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="container">
-    <h1>Mes Pétitions</h1>
+    <div class="container">
+        <h1>Mes Pétitions</h1>
 
-    <div id="petitionContainer">
-        <!-- Petitions will load here -->
+        <div id="petitionContainer">
+            <!-- Petitions will load here -->
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                function loadPetitions() {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("GET", "fetch_Mespetitions.php", true);
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            document.getElementById("petitionContainer").innerHTML = xhr.responseText;
+                        }
+                    };
+                    xhr.send();
+                }
+
+                loadPetitions();
+
+                setInterval(loadPetitions, 2000);
+            });
+        </script>
+
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            function loadPetitions() {
-                const xhr = new XMLHttpRequest();
-                xhr.open("GET", "fetch_Mespetitions.php", true);
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        document.getElementById("petitionContainer").innerHTML = xhr.responseText;
-                    }
-                };
-                xhr.send();
-            }
-
-            loadPetitions();
-
-            setInterval(loadPetitions, 2000);
-        });
-    </script>
-
-</div>
-
 </body>
+
 </html>

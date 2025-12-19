@@ -35,11 +35,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Check if email already exists
-    $checkEmail = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $checkEmail->execute([$email]);
-    if ($checkEmail->rowCount() > 0) {
-        $errors[] = "Cette adresse email est déjà utilisée.";
+    $query = "SELECT id FROM users WHERE email = :email";
+    $stmt = oci_parse($conn, $query);
+    oci_bind_by_name($stmt, ':email', $email);
+    if (!oci_execute($stmt)) {
+        $errors[] = "Error checking email: " . oci_error_message($stmt);
+    } else {
+        $user = oci_fetch_assoc($stmt);
+        if ($user) {
+            $errors[] = "Cette adresse email est déjà utilisée.";
+        }
     }
+    oci_free_statement($stmt);
 
     // If no errors, proceed with registration
     if (empty($errors)) {
@@ -47,25 +54,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Hash the password
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            // Insert user into database
-            $stmt = $conn->prepare("INSERT INTO users (nom, prenom, pays, email, password) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$nom, $prenom, $pays, $email, $hashedPassword]);
+            // Insert user into database and return generated id
+            $newId = 0;
+            $query = "INSERT INTO users (nom, prenom, pays, email, password)
+                      VALUES (:nom, :prenom, :pays, :email, :password)
+                      RETURNING id INTO :new_id";
+            $stmt = oci_parse($conn, $query);
+            oci_bind_by_name($stmt, ':nom', $nom);
+            oci_bind_by_name($stmt, ':prenom', $prenom);
+            oci_bind_by_name($stmt, ':pays', $pays);
+            oci_bind_by_name($stmt, ':email', $email);
+            oci_bind_by_name($stmt, ':password', $hashedPassword);
+            oci_bind_by_name($stmt, ':new_id', $newId, 32);
+            if (!oci_execute($stmt, OCI_COMMIT_ON_SUCCESS)) {
+                $errors[] = "Erreur lors de l'inscription : " . oci_error_message($stmt);
+            } else {
+                $_SESSION['user_id'] = $newId;
+                $_SESSION['user_nom'] = $nom;
+                $_SESSION['user_prenom'] = $prenom;
+                $_SESSION['user_email'] = $email;
+                $_SESSION['user_pays'] = $pays;
 
-            // Get the inserted user ID
-            $userId = $conn->lastInsertId();
-
-            // Set session variables
-            $_SESSION['user_id'] = $userId;
-            $_SESSION['user_nom'] = $nom;
-            $_SESSION['user_prenom'] = $prenom;
-            $_SESSION['user_email'] = $email;
-            $_SESSION['user_pays'] = $pays;
-
-            // Redirect to home page
-            header("Location: index.php");
-            exit();
-
-        } catch(PDOException $e) {
+                header("Location: index.php");
+                exit();
+            }
+            oci_free_statement($stmt);
+        } catch (Exception $e) {
             $errors[] = "Erreur lors de l'inscription : " . $e->getMessage();
         }
     }
@@ -88,4 +102,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("Location: register.php");
     exit();
 }
-?>

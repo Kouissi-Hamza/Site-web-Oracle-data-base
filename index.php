@@ -5,6 +5,7 @@ include 'connexion.php';
 
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,7 +27,7 @@ include 'connexion.php';
         nav {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             position: fixed;
             width: 100%;
             top: 0;
@@ -88,7 +89,8 @@ include 'connexion.php';
 
         .btn-secondary {
             background: transparent;
-            border: 2px solid #1e88e5;
+            background: #ffffffff;
+            /* border: 2px solid #1e88e5; */
             color: #1e88e5 !important;
             padding: 0.7rem 1.5rem !important;
             border-radius: 25px;
@@ -132,8 +134,13 @@ include 'connexion.php';
         }
 
         @keyframes float {
-            0% { transform: rotate(0deg) translate(0, 0); }
-            100% { transform: rotate(360deg) translate(-50px, -50px); }
+            0% {
+                transform: rotate(0deg) translate(0, 0);
+            }
+
+            100% {
+                transform: rotate(360deg) translate(-50px, -50px);
+            }
         }
 
         .hero-content {
@@ -147,7 +154,7 @@ include 'connexion.php';
             font-size: 3.5rem;
             margin-bottom: 1rem;
             font-weight: 700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .hero p {
@@ -203,13 +210,13 @@ include 'connexion.php';
             padding: 2rem;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
         .feature-icon {
@@ -346,12 +353,14 @@ include 'connexion.php';
                 font-size: 2rem;
             }
 
-            .features, .cta {
+            .features,
+            .cta {
                 padding: 4rem 1rem;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav>
@@ -360,7 +369,7 @@ include 'connexion.php';
             <div class="nav-links">
                 <a href="index.php">Accueil</a>
                 <a href="ListePetitions.php">Pétitions</a>
-                <?php if(isset($_SESSION['user_id'])): ?>
+                <?php if (isset($_SESSION['user_id'])): ?>
                     <a href="ajouterPetition.php">Créer</a>
                     <a href="mesPetitions.php">Mes Pétitions</a>
                     <span class="user-info"><?php echo htmlspecialchars($_SESSION['user_nom']); ?></span>
@@ -379,7 +388,10 @@ include 'connexion.php';
             <h1>Votre Voix Peut Changer le Monde</h1>
             <p>Rejoignez notre plateforme citoyenne et faites entendre votre voix. Créez, signez et soutenez les pétitions qui vous tiennent à cœur.</p>
             <div class="hero-buttons">
-                <a href="register.php" class="btn-primary">Commencer maintenant</a>
+                <?php if (!isset($_SESSION['user_id'])):
+                    echo '<a href="register.php" class="btn-primary">Commencer maintenant</a>'
+                ?>
+                <?php endif; ?>
                 <a href="ListePetitions.php" class="btn-secondary">Voir les pétitions</a>
             </div>
         </div>
@@ -437,7 +449,11 @@ include 'connexion.php';
         <div class="container">
             <h2>Prêt à faire entendre votre voix ?</h2>
             <p>Rejoignez des milliers de citoyens qui utilisent notre plateforme pour créer le changement.</p>
-            <a href="register.php" class="btn-primary" style="display: inline-block; margin-top: 1rem;">Rejoindre maintenant</a>
+            <?php if (!isset($_SESSION['user_id'])):
+                echo '<a href="register.php" class="btn-primary" style="display: inline-block; margin-top: 1rem;">Rejoindre maintenant</a>'
+            ?>
+            <?php endif; ?>
+            
         </div>
     </section>
 
@@ -453,11 +469,9 @@ include 'connexion.php';
     </footer>
 
     <script>
-
-
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
@@ -470,4 +484,5 @@ include 'connexion.php';
         });
     </script>
 </body>
+
 </html>

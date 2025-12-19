@@ -2,7 +2,7 @@
 include 'connexion.php';
 
 // Require login to sign petitions
-if(!isLoggedIn()) {
+if (!isLoggedIn()) {
     header("Location: index.php");
     exit();
 }
@@ -16,9 +16,14 @@ $defaultPays = $_SESSION['user_pays'];
 if (isset($_GET['idp'])) {
     $idp = $_GET['idp'];
 
-    $stmt = $conn->prepare("SELECT * FROM petition WHERE IDP = ?");
-    $stmt->execute([$idp]);
-    $petition = $stmt->fetch();
+    $query = "SELECT * FROM petition WHERE IDP = :idp";
+    $stmt = oci_parse($conn, $query);
+    oci_bind_by_name($stmt, ':idp', $idp);
+    if (!oci_execute($stmt)) {
+        die("Error executing query: " . oci_error_message($stmt));
+    }
+    $petition = oci_fetch_assoc($stmt);
+    oci_free_statement($stmt);
 } else {
     die("Aucune pétition sélectionnée !");
 }
@@ -26,6 +31,7 @@ if (isset($_GET['idp'])) {
 
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Signer la pétition</title>
@@ -47,7 +53,7 @@ if (isset($_GET['idp'])) {
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -109,8 +115,8 @@ if (isset($_GET['idp'])) {
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         h2 {
@@ -176,7 +182,7 @@ if (isset($_GET['idp'])) {
 
         .signature-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .signature-name {
@@ -226,6 +232,7 @@ if (isset($_GET['idp'])) {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -365,77 +372,80 @@ if (isset($_GET['idp'])) {
         }
     </style>
 </head>
+
 <body>
-<div class="header">
-    <div class="header-content">
-        <a href="index.php" class="logo">Gestion des Pétitions</a>
-        <div class="nav-links">
-            <a href="index.php">Accueil</a>
-            <a href="ListePetitions.php">Pétitions</a>
-            <a href="ajouterPetition.php">Créer</a>
-            <a href="mesPetitions.php">Mes Pétitions</a>
-            <span class="user-info"><?php echo htmlspecialchars($_SESSION['user_prenom']); ?></span>
-            <a href="logout.php">Déconnexion</a>
+    <div class="header">
+        <div class="header-content">
+            <a href="index.php" class="logo">Gestion des Pétitions</a>
+            <div class="nav-links">
+                <a href="index.php">Accueil</a>
+                <a href="ListePetitions.php">Pétitions</a>
+                <a href="ajouterPetition.php">Créer</a>
+                <a href="mesPetitions.php">Mes Pétitions</a>
+                <span class="user-info"><?php echo htmlspecialchars($_SESSION['user_prenom']); ?></span>
+                <a href="logout.php">Déconnexion</a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="container">
-    <div class="form-card">
-        <form action="ajouterSignature.php" method="POST">
-            <div class="recent-signatures">
-                <h3>Dernières signatures</h3>
-                <div id="top5Petition" class="signatures-list">
-                    <div class="loading">Chargement des signatures...</div>
+    <div class="container">
+        <div class="form-card">
+            <form action="ajouterSignature.php" method="POST">
+                <div class="recent-signatures">
+                    <h3>Dernières signatures</h3>
+                    <div id="top5Petition" class="signatures-list">
+                        <div class="loading">Chargement des signatures...</div>
+                    </div>
                 </div>
-            </div>
-<!--            <div class="petition-info">-->
-<!--                <p><strong>Titre :</strong> --><?php //= htmlspecialchars($petition['TitreP']); ?><!--</p>-->
-<!--                <p><strong>Description :</strong> --><?php //= htmlspecialchars($petition['DescriptionP']); ?><!--</p>-->
-<!--            </div>-->
-            <h2>Signer la pétition</h2>
+                <!--            <div class="petition-info">-->
+                <!--                <p><strong>Titre :</strong> --><?php //= htmlspecialchars($petition['TitreP']); 
+                                                                    ?><!--</p>-->
+                <!--                <p><strong>Description :</strong> --><?php //= htmlspecialchars($petition['DescriptionP']); 
+                                                                            ?><!--</p>-->
+                <!--            </div>-->
+                <h2>Signer la pétition</h2>
 
-            <div class="petition-info">
-                <h3><?php echo htmlspecialchars($petition['TitreP']); ?></h3>
-                <p><strong>Description:</strong> <?php echo htmlspecialchars($petition['DescriptionP']); ?></p>
-            </div>
+                <div class="petition-info">
+                    <h3><?php echo htmlspecialchars($petition['TITREP']); ?></h3>
+                    <p><strong>Description:</strong> <?php echo htmlspecialchars(oci_clob_to_string($petition['DESCRIPTIONP'])); ?></p>
+                </div>
 
-            <input type="hidden" name="idp" value="<?php echo $petition['IDP']; ?>">
+                <input type="hidden" name="idp" value="<?php echo $petition['IDP']; ?>">
 
-            <div class="form-group">
-                <label for="nomS">Nom</label>
-                <input type="text" name="nomS" value="<?php echo htmlspecialchars($defaultNom); ?>" required>
-            </div>
+                <div class="form-group">
+                    <label for="nomS">Nom</label>
+                    <input type="text" name="nomS" value="<?php echo htmlspecialchars($defaultNom); ?>" required>
+                </div>
 
-            <div class="form-group">
-                <label for="prenomS">Prénom</label>
-                <input type="text" name="prenomS" value="<?php echo htmlspecialchars($defaultPrenom); ?>" required>
-            </div>
+                <div class="form-group">
+                    <label for="prenomS">Prénom</label>
+                    <input type="text" name="prenomS" value="<?php echo htmlspecialchars($defaultPrenom); ?>" required>
+                </div>
 
-            <div class="form-group">
-                <label for="paysS">Pays</label>
-                <input type="text" name="paysS" value="<?php echo htmlspecialchars($defaultPays); ?>" required>
-            </div>
+                <div class="form-group">
+                    <label for="paysS">Pays</label>
+                    <input type="text" name="paysS" value="<?php echo htmlspecialchars($defaultPays); ?>" required>
+                </div>
 
-            <div class="form-group">
-                <label for="emailS">Email</label>
-                <input type="email" name="emailS" value="<?php echo htmlspecialchars($defaultEmail); ?>" required>
-            </div>
+                <div class="form-group">
+                    <label for="emailS">Email</label>
+                    <input type="email" name="emailS" value="<?php echo htmlspecialchars($defaultEmail); ?>" required>
+                </div>
 
-            <button type="submit" class="submit-btn">Signer la pétition</button>
-        </form>
+                <button type="submit" class="submit-btn">Signer la pétition</button>
+            </form>
 
-        <a href="ListePetitions.php" class="back-link">Retour à la liste des pétitions</a>
+            <a href="ListePetitions.php" class="back-link">Retour à la liste des pétitions</a>
+        </div>
     </div>
-</div>
 
 </body>
+
 </html>
 <script>
-
     function RecupText() {
         objetXHR = new XMLHttpRequest();
-        objetXHR.open("get","dernieres5ajoutee.php?idp=<?= $idp ?>", true);
+        objetXHR.open("get", "dernieres5ajoutee.php?idp=<?= $idp ?>", true);
         objetXHR.onreadystatechange = function() {
             if (objetXHR.readyState === 4 && objetXHR.status === 200) {
                 let data = JSON.parse(objetXHR.responseText);
@@ -474,5 +484,5 @@ if (isset($_GET['idp'])) {
         objetXHR.send();
     }
     RecupText();
-    setInterval(RecupText,5000);
+    setInterval(RecupText, 5000);
 </script>
