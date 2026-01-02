@@ -11,7 +11,7 @@ if (!isLoggedIn()) {
 if (!isset($_GET['id'])) {
     header("Location: mesPetitions.php");
     exit();
-}
+} 
 
 $petitionId = $_GET['id'];
 $userEmail = $_SESSION['user_email'];

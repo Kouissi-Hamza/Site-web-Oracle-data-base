@@ -1,7 +1,7 @@
 <?php
 include 'connexion.php';
-session_start();
-
+// session_start();
+ 
 /* ---------- Security checks ---------- */
 if (!isLoggedIn()) {
     header("Location: index.php");
