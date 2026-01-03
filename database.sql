@@ -1,25 +1,5 @@
--- =====================================================
--- TP3 Database Setup Script
--- Oracle XE (XEPDB1)
--- Script de création et configuration de la base de données
--- =====================================================
-
 -- Bascule la session vers la base pluggable XEPDB1
 ALTER SESSION SET CONTAINER = XEPDB1;
-
--- =====================================================
--- USER CREATION
--- Création de l'utilisateur dédié au projet
--- =====================================================
-
--- Crée l'utilisateur TP3 avec le mot de passe tp3
-CREATE USER TP3 IDENTIFIED BY tp3
-  -- Définit USERS comme tablespace par défaut
-  DEFAULT TABLESPACE USERS
-  -- Définit TEMP comme tablespace temporaire
-  TEMPORARY TABLESPACE TEMP
-  -- Autorise un espace disque illimité sur USERS
-  QUOTA UNLIMITED ON USERS;
 
 -- Attribue les privilèges nécessaires au développement
 GRANT CREATE SESSION,      -- Autorise la connexion à la base
@@ -126,17 +106,8 @@ CREATE TABLE signature (
     ON DELETE CASCADE
 );
 
--- =====================================================
--- INDEXES
--- Amélioration des performances des requêtes
--- =====================================================
-
 -- Index pour accélérer les recherches par pétition dans SIGNATURE
 CREATE INDEX idx_signature_idp ON signature(IDP);
 
 -- Index pour accélérer les recherches par date d'ajout des pétitions
 CREATE INDEX idx_petition_date ON petition(DateAjoutP);
-
--- =====================================================
--- END OF SCRIPT
--- =====================================================
